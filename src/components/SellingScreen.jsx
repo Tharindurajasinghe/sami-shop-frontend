@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getBillHTML } from '../components/BillView';
 import api from '../services/api';
 import { Product } from '../utils/ProductClasses';
-import { getUnitShort } from '../utils/units';  // ✅ NEW IMPORT
+import { getUnitShort } from '../utils/Units';
 import UptoNowBox from './UptoNowBox';
 import LowStockAlert from './LowStockAlert';
 import LoadingOverlay from '../components/LoadingOverlay';
@@ -49,7 +49,10 @@ const SellingScreen = ({ onEndDay }) => {
   const [currentSales, setCurrentSales] = useState({ total: 0, profit: 0 });
   const [cash, setCash]   = useState('');
   const [change, setChange] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]               = useState(false);        // day-end loading (existing)
+  const [productsLoading, setProductsLoading] = useState(true);       // initial product load
+  const [billSaving, setBillSaving]           = useState(false);      // bill save (print/cash Enter)
+  const [billsChecking, setBillsChecking]     = useState(false);      // Check Up to Now Sell
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
 
   // Barcode scanner state
@@ -73,6 +76,7 @@ const SellingScreen = ({ onEndDay }) => {
   useEffect(() => {
     loadCurrentDaySummary();
     (async () => {
+      setProductsLoading(true);
       try {
         const res = await api.getProducts();
         const keyIndex  = {};
@@ -87,6 +91,8 @@ const SellingScreen = ({ onEndDay }) => {
         setProductsByIdMap(idGroupMap);
       } catch {
         alert('Products failed to load');
+      } finally {
+        setProductsLoading(false);
       }
     })();
   }, []);
@@ -122,7 +128,7 @@ const SellingScreen = ({ onEndDay }) => {
       if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
 
       if (e.key === 'Enter') {
-        // FIX 1: Cancel idle timer immediately so it cannot fire a second scan
+        // Cancel idle timer immediately so it cannot fire a second scan
         if (barcodeTimerRef.current) {
           clearTimeout(barcodeTimerRef.current);
           barcodeTimerRef.current = null;
@@ -130,7 +136,7 @@ const SellingScreen = ({ onEndDay }) => {
 
         setBarcodeBuffer(prev => {
           const code = prev.trim();
-          // FIX 1: Only call handler if not already handled by idle timer
+          // Only call handler if not already handled by idle timer
           if (code.length >= BARCODE_MIN_LENGTH && !barcodeHandledRef.current) {
             barcodeHandledRef.current = true;
             handleBarcodeScanned(code);
@@ -154,7 +160,7 @@ const SellingScreen = ({ onEndDay }) => {
         barcodeTimerRef.current = setTimeout(() => {
           setBarcodeBuffer(prev => {
             const code = prev.trim();
-            // FIX 1: Only fire if not already handled and guard not set
+            // Only fire if not already handled and guard not set
             if (code.length >= BARCODE_MIN_LENGTH && !barcodeHandledRef.current) {
               barcodeHandledRef.current = true;
               handleBarcodeScanned(code);
@@ -176,7 +182,7 @@ const SellingScreen = ({ onEndDay }) => {
   /** Handle a fully scanned barcode */
   const handleBarcodeScanned = async (barcode) => {
     setBarcodeStatus('scanning');
-    // FIX 2: Clear the search field immediately when a barcode scan is triggered
+    // Clear the search field immediately when a barcode scan is triggered
     setSearchQuery('');
     setSuggestions([]);
 
@@ -438,7 +444,7 @@ const SellingScreen = ({ onEndDay }) => {
         product      : newProduct,
         editedPrice  : null,
         priceInput   : String(newProduct.sellingPrice),
-        quantityInput: String(r.quantity),  // ✅ Preserve quantityInput
+        quantityInput: String(r.quantity),
       };
     }));
   };
@@ -547,41 +553,56 @@ const SellingScreen = ({ onEndDay }) => {
   const handlePrintSave = async (skipConfirm = false) => {
     document.activeElement?.blur();
 
-    if (cartItems.length === 0)
-       { alert('Cart is empty!');
-         return; }
+    if (cartItems.length === 0) {
+      alert('Cart is empty!');
+      return;
+    }
 
     // If called from Ctrl shortcut, skip the confirm dialog and always print
     const doPrint = skipConfirm
       ? true
       : window.confirm('Do you want to print the bill?\n\nYes - Print and Save\nNo - Save Only');
+
+    setBillSaving(true);
     try {
       const res = await api.createBill(buildBillData(parseFloat(cash) || 0));
+      // Hide loading BEFORE alert appears (as required)
+      setBillSaving(false);
       if (doPrint) printBill(res.data);
       alert('Bill saved successfully!');
       clearCart();
     } catch (err) {
+      setBillSaving(false);
       alert(err.response?.data?.message || 'Error saving bill');
     }
   };
 
   const handleSaveBillFromCash = async (cashNum) => {
     if (cartItems.length === 0) return;
+    setBillSaving(true);
     try {
       await api.createBill(buildBillData(cashNum));
+      // Hide loading BEFORE alert appears (as required)
+      setBillSaving(false);
       alert('Bill saved successfully!');
       clearCart();
     } catch (err) {
+      setBillSaving(false);
       alert(err.response?.data?.message || 'Error saving bill');
     }
   };
 
   const handleCheckUpToNow = async () => {
+    setBillsChecking(true);
     try {
       const r = await api.getTodayBills();
       setTodayBills(r.data);
       setShowBills(true);
-    } catch { alert('Error loading bills'); }
+    } catch {
+      alert('Error loading bills');
+    } finally {
+      setBillsChecking(false);
+    }
   };
 
   const handleEndDay = async () => {
@@ -609,7 +630,11 @@ const SellingScreen = ({ onEndDay }) => {
 
   return (
     <div>
-      {loading && <LoadingOverlay message="Creating day-end summary..." />}
+      {/* Loading overlays — each with specific message */}
+      {productsLoading  && <LoadingOverlay message="Loading products..." />}
+      {billSaving       && <LoadingOverlay message="Saving bill..." />}
+      {billsChecking    && <LoadingOverlay message="Loading bills..." />}
+      {loading          && <LoadingOverlay message="Creating day-end summary..." />}
 
       <div className="grid grid-cols-2 gap-6 mb-6">
 

@@ -3,6 +3,7 @@ import api from '../services/api';
 import AddProduct from './AddProduct';
 import UpdateProduct from './UpdateProduct';
 import CategoryManagement from './CategoryManagement';
+import LoadingOverlay from './LoadingOverlay';
 
 const StoreManagement = () => {
   const [products, setProducts]               = useState([]);
@@ -15,6 +16,12 @@ const StoreManagement = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null); // only productId needed now
 
+  // ── Loading states ────────────────────────────────────────────────────────
+  const [pageLoading, setPageLoading]   = useState(true);   // initial load of products + categories
+  const [tableLoading, setTableLoading] = useState(false);  // reload after add / update / delete
+  const [addLoading, setAddLoading]     = useState(false);  // fetching next product ID
+  const [deleteLoading, setDeleteLoading] = useState(false); // deleting a product
+
   const [formData, setFormData] = useState({
     productId : '',
     name      : '',
@@ -25,7 +32,18 @@ const StoreManagement = () => {
     sellingPrice: ''
   });
 
-  useEffect(() => { loadProducts(); loadCategories(); }, []);
+  useEffect(() => {
+    const initialLoad = async () => {
+      setPageLoading(true);
+      try {
+        await Promise.all([loadProducts(), loadCategories()]);
+      } finally {
+        setPageLoading(false);
+      }
+    };
+    initialLoad();
+  }, []);
+
   useEffect(() => { filterProducts(); }, [selectedCategory, searchQuery, products]);
 
   const loadProducts = async () => {
@@ -61,9 +79,21 @@ const StoreManagement = () => {
     setFilteredProducts(filtered);
   };
 
+  // Reload products + categories with table loading indicator
+  // Used as callback after add, update, delete, category change
+  const reloadData = async () => {
+    setTableLoading(true);
+    try {
+      await Promise.all([loadProducts(), loadCategories()]);
+    } finally {
+      setTableLoading(false);
+    }
+  };
+
   // ── Add Product ──────────────────────────────────────────────────────────
 
   const handleAddProduct = async () => {
+    setAddLoading(true);
     try {
       const res = await api.getNextProductId();
       setFormData({
@@ -78,6 +108,8 @@ const StoreManagement = () => {
       setShowAddModal(true);
     } catch {
       alert('Error getting next product ID');
+    } finally {
+      setAddLoading(false);
     }
   };
 
@@ -97,12 +129,15 @@ const StoreManagement = () => {
       `Are you sure you want to delete this product${variantText}?`
     );
     if (!confirmed) return;
+    setDeleteLoading(true);
     try {
       await api.deleteProduct(productId, variant);
       alert('Product deleted successfully!');
-      loadProducts();
+      await reloadData();
     } catch (err) {
       alert(err.response?.data?.message || 'Error deleting product');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -118,6 +153,12 @@ const StoreManagement = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
+      {/* Loading overlays */}
+      {pageLoading   && <LoadingOverlay message="Loading store data..." />}
+      {tableLoading  && <LoadingOverlay message="Updating products..." />}
+      {addLoading    && <LoadingOverlay message="Preparing form..." />}
+      {deleteLoading && <LoadingOverlay message="Deleting product..." />}
+
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Store Management</h2>
         <div className="flex gap-2">
@@ -250,7 +291,7 @@ const StoreManagement = () => {
       <CategoryManagement
         show={showCategoryModal}
         onClose={() => setShowCategoryModal(false)}
-        onCategoryChange={() => { loadCategories(); loadProducts(); }}
+        onCategoryChange={reloadData}
       />
 
       <AddProduct
@@ -258,7 +299,7 @@ const StoreManagement = () => {
         setShowAddModal={setShowAddModal}
         formData={formData}
         setFormData={setFormData}
-        onProductAdded={loadProducts}
+        onProductAdded={reloadData}
       />
 
       {/* UpdateProduct now receives productId and a callback — no formData needed */}
@@ -266,7 +307,7 @@ const StoreManagement = () => {
         showUpdateModal={showUpdateModal}
         setShowUpdateModal={setShowUpdateModal}
         productId={selectedProductId}
-        onProductUpdated={loadProducts}
+        onProductUpdated={reloadData}
       />
     </div>
   );
