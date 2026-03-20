@@ -77,8 +77,8 @@ export const getBillHTML = (bill) => {
     </head>
     <body>
       <div class="header">
-        <div class="shop-name">Jagath Store</div>
-        <div class="bio">Your trusted neighbourhood shop</div>
+        <div class="shop-name">දිසානායක සිටි සෙන්ටර්</div>
+        <div class="bio">නගරය - ගමට</div>
         <p style="margin:2px 0">Pasal Mawatha, Okkampitiya</p>
         <p style="margin:2px 0">Tel: 0713364743</p>
       </div>
@@ -149,8 +149,7 @@ export const getBillHTML = (bill) => {
       <div class="separator"></div>
 
       <div class="sinhala-note">
-        <p>යොගට්/ අයිස්ක්‍රීම් නෑවත භාරගනු නොලෑබේ.</p>
-        <p>ඉල්ලුම් කර ඈති භාණ්ඩ රෑගෙන</p>
+        <p>භාණ්ඩ මාරු කිරීමට</p>
         <p>බිල රෑගෙන ඒම අනිවාර්ය වේ.</p>
       </div>
 

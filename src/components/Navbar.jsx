@@ -59,7 +59,7 @@ const Navbar = ({ activeScreen, setActiveScreen, onLogout }) => {
       <nav className="bg-blue-600 text-white shadow-lg sticky top-0">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
-            <h1 className="text-2xl font-bold">The Vision</h1>
+            <h1 className="text-2xl font-bold">Dissanayake City Center</h1>
             
             <div className="flex space-x-2">
               {navItems.map(item => (

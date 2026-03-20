@@ -33,7 +33,7 @@ const Login = ({ onLogin }) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-green-700 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-2xl w-96">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-black-600">The Vision</h1>
+          <h1 className="text-3xl font-bold text-black-600">Dissanayake City Center</h1>
           <p className="text-gray-600 mt-2">POS System</p>
         </div>
 
