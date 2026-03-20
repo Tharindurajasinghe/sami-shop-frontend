@@ -10,7 +10,7 @@ class APIService {
   constructor() {
     this.axiosInstance = axios.create({
       baseURL: API_URL,
-      timeout: 60000
+      timeout: 90000
     });
 
     this.setupInterceptors();
