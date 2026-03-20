@@ -143,7 +143,7 @@ export const getBillHTML = (bill) => {
       <div class="summary-row"><b>ගෙවීම්:</b><b>${bill.cash.toFixed(2)}/=</b></div>
       <div class="summary-row"><b>ඉතිරි:</b><b>${bill.change.toFixed(2)}/=</b></div>
       ${hasAnyDiscount
-        ? `<div class="summary-row"><b>Discount:</b><b>${totalDiscount.toFixed(2)}/=</b></div>`
+        ? `<div class="summary-row"><b>ලාබය:</b><b>${totalDiscount.toFixed(2)}/=</b></div>`
         : ''}
 
       <div class="separator"></div>
