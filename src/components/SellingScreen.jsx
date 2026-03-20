@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getBillHTML } from '../components/BillView';
 import api from '../services/api';
 import { Product } from '../utils/ProductClasses';
-import { getUnitShort } from '../utils/units';
+import { getUnitShort } from '../utils/Units';
 import UptoNowBox from './UptoNowBox';
 import LowStockAlert from './LowStockAlert';
 import LoadingOverlay from '../components/LoadingOverlay';

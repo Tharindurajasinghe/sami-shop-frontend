@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { UNIT_OPTIONS } from '../utils/units';  // ✅ NEW IMPORT
+import { UNIT_OPTIONS } from '../utils/Units';  // ✅ NEW IMPORT
 
 /**
  * UpdateProduct Component
