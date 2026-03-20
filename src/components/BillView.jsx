@@ -79,8 +79,8 @@ export const getBillHTML = (bill) => {
       <div class="header">
         <div class="shop-name">දිසානායක සිටි සෙන්ටර්</div>
         <div class="bio">නගරය - ගමට</div>
-        <p style="margin:2px 0">Pasal Mawatha, Okkampitiya</p>
-        <p style="margin:2px 0">Tel: 0713364743</p>
+        <p style="margin:2px 0">නො.68,යුදගනාව ජනපදය,බුත්තල</p>
+        <p style="margin:2px 0">Tel: 0704283858</p>
       </div>
 
       <div class="separator"></div>
@@ -93,11 +93,11 @@ export const getBillHTML = (bill) => {
       <table>
         <thead>
           <tr>
-            <th style="width:38%">Name</th>
-            <th style="width:10%" class="center">Qty</th>
-            <th style="width:16%" class="right">Price</th>
-            ${hasEditedPrice ? `<th style="width:16%" class="right">Dis.Pri</th>` : ''}
-            <th style="width:20%" class="right">Tot</th>
+            <th style="width:38%">නම</th>
+            <th style="width:10%" class="center">ප්‍රමාණය</th>
+            <th style="width:16%" class="right">මිල</th>
+            ${hasEditedPrice ? `<th style="width:16%" class="right">අපේ මිල</th>` : ''}
+            <th style="width:20%" class="right">එකතුව</th>
           </tr>
         </thead>
         <tbody>
@@ -139,9 +139,9 @@ export const getBillHTML = (bill) => {
 
       <div class="separator"></div>
 
-      <div class="summary-row"><b>Sub Total:</b><b>${bill.totalAmount.toFixed(2)}/=</b></div>
-      <div class="summary-row"><b>Cash Paid:</b><b>${bill.cash.toFixed(2)}/=</b></div>
-      <div class="summary-row"><b>Change:</b><b>${bill.change.toFixed(2)}/=</b></div>
+      <div class="summary-row"><b>මුලු.එකතු:</b><b>${bill.totalAmount.toFixed(2)}/=</b></div>
+      <div class="summary-row"><b>ගෙවීම්:</b><b>${bill.cash.toFixed(2)}/=</b></div>
+      <div class="summary-row"><b>ඉතිරි:</b><b>${bill.change.toFixed(2)}/=</b></div>
       ${hasAnyDiscount
         ? `<div class="summary-row"><b>Discount:</b><b>${totalDiscount.toFixed(2)}/=</b></div>`
         : ''}
