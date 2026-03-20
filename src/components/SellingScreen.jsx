@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getBillHTML } from '../components/BillView';
 import api from '../services/api';
 import { Product } from '../utils/ProductClasses';
-import { getUnitShort } from '../utils/Units';
+import { getUnitShort } from '../utils/units';
 import UptoNowBox from './UptoNowBox';
 import LowStockAlert from './LowStockAlert';
 import LoadingOverlay from '../components/LoadingOverlay';
@@ -72,6 +72,10 @@ const SellingScreen = ({ onEndDay }) => {
   const searchInputRef   = useRef(null);
   const cashInputRef     = useRef(null);
 
+  // ── FIX: cart scroll ref + barcode-triggered flag ─────────────────────────
+  const cartScrollRef   = useRef(null); // attached to the cart scroll container div
+  const barcodeAddedRef = useRef(false);// set true just before a barcode cart update
+
   // ── Load products once ─────────────────────────────────────────────────────
   useEffect(() => {
     loadCurrentDaySummary();
@@ -96,6 +100,14 @@ const SellingScreen = ({ onEndDay }) => {
       }
     })();
   }, []);
+
+  // ── FIX: scroll cart to bottom whenever a barcode scan adds/updates a row ──
+  useEffect(() => {
+    if (barcodeAddedRef.current && cartScrollRef.current) {
+      cartScrollRef.current.scrollTop = cartScrollRef.current.scrollHeight;
+      barcodeAddedRef.current = false;
+    }
+  }, [cartItems]);
 
   // ── Global keyboard: Ctrl = print/save, RightShift = focus cash ───────────
   useEffect(() => {
@@ -196,6 +208,9 @@ const SellingScreen = ({ onEndDay }) => {
         alert(`Product "${product.getDisplayName()}" is out of stock!`);
         return;
       }
+
+      // ── FIX: flag that the next cartItems update needs auto-scroll ──
+      barcodeAddedRef.current = true;
 
       // Add directly to cart with qty = 1, then immediately focus search
       addToCartFromBarcode(product);
@@ -773,7 +788,8 @@ const SellingScreen = ({ onEndDay }) => {
             </div>
           ) : (
             <>
-              <div className="space-y-3 mb-4 max-h-96 overflow-y-auto">
+              {/* FIX: ref attached here — barcode scans auto-scroll this div to bottom */}
+              <div ref={cartScrollRef} className="space-y-3 mb-4 max-h-96 overflow-y-auto">
                 {cartItems.map((row) => {
                   const availableVariants = productsByIdMap[row.product.productId] || [];
                   const hasMultipleVariants = availableVariants.length > 1;
