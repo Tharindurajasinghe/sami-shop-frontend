@@ -166,6 +166,7 @@ const UpdateProduct = ({ showUpdateModal, setShowUpdateModal, productId, onProdu
             api.updateProduct(productId, {
               name,
               categoryId,
+              variant: row.variant.trim() || 'Standard',
               stock: parseFloat(row.stock),
               buyingPrice: parseFloat(row.buyingPrice),
               sellingPrice: parseFloat(row.sellingPrice),
